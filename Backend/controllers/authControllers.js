@@ -1,74 +1,57 @@
-const userModel = require('../models/userModel');
 const userService = require('../services/userService');
 const { validationResult } = require('express-validator');
 const blacklistTokenModel = require('../models/blacklistTokenModel');
 
-// register a new user and return a JWT token
+function formatUser(user) {
+    const firstname = user?.fullname?.firstname || '';
+    const lastname = user?.fullname?.lastname || '';
+
+    return {
+        _id: user._id,
+        fullname: user.fullname,
+        name: [firstname, lastname].filter(Boolean).join(' ').trim(),
+        email: user.email,
+        role: String(user.role).toLowerCase() === 'teacher' ? 'teacher' : 'student',
+        phone: user.phone,
+        department: user.department,
+        enrollmentNo: user.enrollmentNo,
+        semester: user.semester,
+        createdAt: user.createdAt,
+    };
+}
+
 module.exports.registerUser = async (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
     }
 
-    const { fullname, email, password } = req.body;
+    const { fullname, email, password, role } = req.body;
 
     try {
         const user = await userService.createUser({
-<<<<<<< HEAD
-            firstname: fullname.firstname, lastname: fullname.lastname, email, password });
-=======
-             firstname: fullname.firstname, lastname: fullname.lastname, email, password });
->>>>>>> upstream/master
+            firstname: fullname.firstname,
+            lastname: fullname.lastname,
+            email,
+            password,
+            role,
+        });
         const token = user.generateAuthToken();
-        res.status(201).json({ token, user });
+        res.status(201).json({ token, user: formatUser(user) });
     } catch (err) {
         next(err);
     }
 };
 
-// authenticate an existing user and return a token
 module.exports.loginUser = async (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
     }
 
-<<<<<<< HEAD
-    const { email, password, role } = req.body;
-    try {
-        // TEST MODE: Accept any credentials in development
-        if (process.env.NODE_ENV !== 'production') {
-            const testUser = {
-                _id: 'test_user_' + Math.random().toString(36).substr(2, 9),
-                firstname: email.split('@')[0],
-                lastname: 'User',
-                email: email,
-                role: role || 'student',
-                generateAuthToken: function() {
-                    return 'test_token_' + Math.random().toString(36).substr(2, 20);
-                }
-            };
-            
-            const token = testUser.generateAuthToken();
-            res.cookie('token', token);
-            
-            return res.json({ 
-                token, 
-                user: { 
-                    _id: testUser._id,
-                    firstname: testUser.firstname,
-                    lastname: testUser.lastname,
-                    email: testUser.email,
-                    role: testUser.role 
-                } 
-            });
-        }
-
-        // PRODUCTION MODE: Check against database
-=======
     const { email, password } = req.body;
+
     try {
->>>>>>> upstream/master
         const user = await userService.findByEmail(email);
         if (!user) {
             return res.status(400).json({ message: 'Invalid credentials' });
@@ -80,18 +63,28 @@ module.exports.loginUser = async (req, res, next) => {
         }
 
         const token = user.generateAuthToken();
-        res.cookie('token', token); 
+        res.cookie('token', token, {
+            httpOnly: true,
+            sameSite: 'lax',
+        });
 
-        res.json({ token, user });
+        res.json({ token, user: formatUser(user) });
     } catch (err) {
         next(err);
     }
 };
 
-//logout
 module.exports.logoutUser = async (req, res, next) => {
-    res.clearCookie('token');
-    const token= req.cookies.token || req.headers.authorization.split(' ')[1];
-    await blacklistTokenModel.create({ token });
-    res.json({ message: 'Logged out successfully' });
+    try {
+        res.clearCookie('token');
+        const token = req.cookies?.token || req.headers.authorization?.split(' ')[1];
+
+        if (token) {
+            await blacklistTokenModel.create({ token });
+        }
+
+        res.json({ message: 'Logged out successfully' });
+    } catch (err) {
+        next(err);
+    }
 };

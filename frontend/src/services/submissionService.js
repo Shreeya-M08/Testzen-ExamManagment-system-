@@ -1,15 +1,8 @@
-import axios from "axios";
+import { apiFetch } from "./api";
 
-const API = "http://localhost:4000/api";
-
-export const submitExam = async (data) => {
-    const token = localStorage.getItem("token");
-
-    const res = await axios.post(`${API}/submit`, data, {
-        headers: {
-            Authorization: `Bearer ${token}`
-        }
-    });
-
-    return res.data;
-};
+export const submitExam = (data, token = localStorage.getItem("token")) =>
+  apiFetch("/submissions", {
+    method: "POST",
+    body: JSON.stringify(data),
+    token,
+  });

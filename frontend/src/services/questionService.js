@@ -1,15 +1,4 @@
-import axios from "axios";
+import { apiFetch } from "./api";
 
-const API = "http://localhost:4000/api";
-
-export const getQuestionsByExamId = async (examId) => {
-    const token = localStorage.getItem("token");
-
-    const res = await axios.get(`${API}/questions/${examId}`, {
-        headers: {
-            Authorization: `Bearer ${token}`
-        }
-    });
-
-    return res.data; // ✅ perfect
-};
+export const getQuestionsByExamId = (examId, token = localStorage.getItem("token")) =>
+  apiFetch(`/exams/${examId}/questions`, { token });

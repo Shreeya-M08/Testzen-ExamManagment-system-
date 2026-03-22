@@ -1,120 +1,177 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
-import { updateProfile } from "../../services/examService";
-
-function getInitials(name = "") {
-  return name
-    .split(" ")
-    .filter(Boolean)
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
-}
+import { fetchProfile, updateProfile } from "../../services/examService";
 
 export default function TeacherProfile() {
-  const { user, token } = useAuth();
+  const { user, updateUser } = useAuth();
+  const [loading, setLoading] = useState(false);
   const [editing, setEditing] = useState(false);
-  const [form, setForm] = useState({
-    name: user?.name || "",
-    phone: user?.phone || "",
-    department: user?.department || "",
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    subject: "",
+    experience: "",
+    qualification: ""
   });
-  const [msg, setMsg] = useState("");
-  const [error, setError] = useState("");
-  const [saving, setSaving] = useState(false);
 
-  const handleSave = async (e) => {
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        name: user.name || "",
+        email: user.email || "",
+        subject: user.subject || "",
+        experience: user.experience || "",
+        qualification: user.qualification || ""
+      });
+    }
+  }, [user]);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setMsg("");
-    setError("");
-    setSaving(true);
-
+    setLoading(true);
+    
     try {
-      await updateProfile(form, token);
-      setMsg("Profile updated successfully!");
+      const updatedProfile = await updateProfile(formData, localStorage.getItem('token'));
+      updateUser(updatedProfile?.user || updatedProfile);
       setEditing(false);
-    } catch (err) {
-      setError(err.message || "Update failed");
+      alert("Profile updated successfully!");
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      alert("Failed to update profile. Please try again.");
     } finally {
-      setSaving(false);
+      setLoading(false);
+    }
+  };
+
+  const handleCancel = () => {
+    setEditing(false);
+    if (user) {
+      setFormData({
+        name: user.name || "",
+        email: user.email || "",
+        subject: user.subject || "",
+        experience: user.experience || "",
+        qualification: user.qualification || ""
+      });
     }
   };
 
   return (
     <div className="fade-up">
-      <div className="profile-hero">
-        <div className="profile-avatar">{getInitials(user?.name)}</div>
-        <div>
-          <div className="profile-role">Teacher</div>
-          <h2>{user?.name || "Teacher"}</h2>
-          <p>{user?.email || "—"}</p>
-        </div>
+      <div className="dashboard__page-header">
+        <h1 className="dashboard__page-title">Teacher Profile</h1>
+        <p className="dashboard__page-sub">Manage your personal information</p>
       </div>
 
-      {msg && <div className="alert-success">✓ {msg}</div>}
-      {error && <div className="alert-error">⚠ {error}</div>}
-
-      <div className="section">
-        <div className="section-title">Profile Details</div>
-        <button className="btn btn-ghost" onClick={() => setEditing((v) => !v)}>
-          {editing ? "Cancel" : "✏ Edit"}
-        </button>
+      <div className="card">
+        <div className="profile-header">
+          <div className="profile-avatar">
+            {user?.name?.charAt(0)?.toUpperCase() || "T"}
+          </div>
+          <div className="profile-info">
+            <h2>{user?.name || "Teacher"}</h2>
+            <p>{user?.email || "teacher@example.com"}</p>
+            <button 
+              className="btn btn-secondary"
+              onClick={() => setEditing(!editing)}
+            >
+              {editing ? "Cancel" : "Edit Profile"}
+            </button>
+          </div>
+        </div>
 
         {editing ? (
-          <form onSubmit={handleSave} className="profile-form">
-            <input
-              className="form-input"
-              value={form.name}
-              onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-              placeholder="Full Name"
-            />
-            <input
-              className="form-input"
-              value={form.phone}
-              onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
-              placeholder="Phone"
-            />
-            <input
-              className="form-input"
-              value={form.department}
-              onChange={(e) => setForm((f) => ({ ...f, department: e.target.value }))}
-              placeholder="Department"
-            />
+          <form className="profile-form" onSubmit={handleSubmit}>
+            <div className="form-grid">
+              <div className="form-group">
+                <label>Full Name</label>
+                <input
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) => setFormData({...formData, name: e.target.value})}
+                  required
+                />
+              </div>
 
-            <div style={{ display: "flex", gap: "0.75rem" }}>
-              <button className="btn btn-primary" type="submit" disabled={saving}>
-                {saving ? "Saving..." : "Save Changes"}
-              </button>
-              <button className="btn btn-ghost" type="button" onClick={() => setEditing(false)}>
+              <div className="form-group">
+                <label>Email</label>
+                <input
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({...formData, email: e.target.value})}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Subject Specialization</label>
+                <input
+                  type="text"
+                  value={formData.subject}
+                  onChange={(e) => setFormData({...formData, subject: e.target.value})}
+                  placeholder="e.g., Computer Science, Mathematics"
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Years of Experience</label>
+                <input
+                  type="number"
+                  value={formData.experience}
+                  onChange={(e) => setFormData({...formData, experience: e.target.value})}
+                  min="0"
+                  max="50"
+                />
+              </div>
+
+              <div className="form-group full-width">
+                <label>Highest Qualification</label>
+                <input
+                  type="text"
+                  value={formData.qualification}
+                  onChange={(e) => setFormData({...formData, qualification: e.target.value})}
+                  placeholder="e.g., M.Tech, Ph.D., M.Sc"
+                />
+              </div>
+            </div>
+
+            <div className="form-actions">
+              <button type="button" className="btn btn-ghost" onClick={handleCancel}>
                 Cancel
+              </button>
+              <button type="submit" className="btn btn-primary" disabled={loading}>
+                {loading ? "Saving..." : "Save Changes"}
               </button>
             </div>
           </form>
         ) : (
-          <div className="detail-grid">
-            {[
-              ["Full Name", user?.name],
-              ["Email", user?.email],
-              ["Role", "Teacher"],
-              ["Department", user?.department],
-              ["Phone", user?.phone],
-              [
-                "Member Since",
-                user?.createdAt
-                  ? new Date(user.createdAt).toLocaleDateString("en-IN", {
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                    })
-                  : "—",
-              ],
-            ].map(([label, val]) => (
-              <div className="detail-item" key={label}>
-                <div className="detail-label">{label}</div>
-                <div className="detail-value">{val || "—"}</div>
+          <div className="profile-details">
+            <div className="detail-grid">
+              <div className="detail-item">
+                <label>Full Name</label>
+                <p>{user?.name || "N/A"}</p>
               </div>
-            ))}
+              <div className="detail-item">
+                <label>Email</label>
+                <p>{user?.email || "N/A"}</p>
+              </div>
+              <div className="detail-item">
+                <label>Subject</label>
+                <p>{user?.subject || "N/A"}</p>
+              </div>
+              <div className="detail-item">
+                <label>Experience</label>
+                <p>{user?.experience ? `${user.experience} years` : "N/A"}</p>
+              </div>
+              <div className="detail-item">
+                <label>Qualification</label>
+                <p>{user?.qualification || "N/A"}</p>
+              </div>
+              <div className="detail-item">
+                <label>Member Since</label>
+                <p>{user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : "N/A"}</p>
+              </div>
+            </div>
           </div>
         )}
       </div>

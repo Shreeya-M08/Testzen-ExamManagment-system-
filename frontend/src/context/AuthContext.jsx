@@ -1,32 +1,62 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState } from "react";
-import { getRole, removeToken } from "../utils/auth";
+import {
+  getToken,
+  getUser,
+  normalizeUser,
+  removeToken,
+  setRole,
+  setToken as persistToken,
+  setUser as persistUser,
+} from "../utils/auth";
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const role = getRole();
-
-  const [user, setUser] = useState(role ? { role } : null);
-  const [isLoggedIn, setIsLoggedIn] = useState(Boolean(role));
+  const [user, setUser] = useState(getUser());
+  const [token, setTokenState] = useState(getToken());
   const [loading] = useState(false);
 
-  const login = (userData, token) => {
-    setUser(userData);
-    setIsLoggedIn(true);
-    if (token) {
-      localStorage.setItem("token", token);
+  const login = (userData, authToken) => {
+    const normalizedUser = normalizeUser(userData);
+    setUser(normalizedUser);
+    persistUser(normalizedUser);
+
+    if (normalizedUser?.role) {
+      setRole(normalizedUser.role);
     }
+
+    if (authToken) {
+      setTokenState(authToken);
+      persistToken(authToken);
+    }
+  };
+
+  const updateUser = (userData) => {
+    const normalizedUser = normalizeUser(userData);
+    setUser(normalizedUser);
+    persistUser(normalizedUser);
   };
 
   const logout = () => {
     setUser(null);
-    setIsLoggedIn(false);
+    setTokenState(null);
     removeToken();
   };
 
   return (
-    <AuthContext.Provider value={{ user, isLoggedIn, loading, login, logout }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        student: user,
+        token,
+        isLoggedIn: Boolean(token),
+        loading,
+        login,
+        logout,
+        updateUser,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

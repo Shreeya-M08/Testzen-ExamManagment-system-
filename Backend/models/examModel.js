@@ -5,8 +5,6 @@ const examSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-<<<<<<< HEAD
-=======
     subject: {
         type: String,
         required: true
@@ -14,7 +12,6 @@ const examSchema = new mongoose.Schema({
     description: {
         type: String
     },
->>>>>>> upstream/master
     type: {
         type: String,
         enum: ['MCQ', 'LONG'],
@@ -30,10 +27,8 @@ const examSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
-<<<<<<< HEAD
-=======
     duration: {
-        type: Number, // in minutes
+        type: Number,
         default: 60
     },
     status: {
@@ -45,21 +40,18 @@ const examSchema = new mongoose.Schema({
         type: String,
         required: true
     },
->>>>>>> upstream/master
     createdAt: {
         type: Date,
         default: Date.now
     }
 });
 
-// whenever an exam is saved we can recompute totalMarks from its questions
-examSchema.pre('save', async function(next) {
+examSchema.pre('save', async function() {
     if (this.questions && this.questions.length) {
         const Question = require('./questionModel');
-        const qs = await Question.find({ _id: { $in: this.questions } });
-        this.totalMarks = qs.reduce((sum, q) => sum + (q.marks || 0), 0);
+        const questions = await Question.find({ _id: { $in: this.questions } });
+        this.totalMarks = questions.reduce((sum, question) => sum + (question.marks || 0), 0);
     }
-    next();
 });
 
 module.exports = mongoose.model('Exam', examSchema);

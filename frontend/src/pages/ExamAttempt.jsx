@@ -1,253 +1,95 @@
-<<<<<<< HEAD
-import React, { useState, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import QuestionDashboard from "./QuestionDashboard";
+import { useAuth } from "../context/AuthContext";
+import { submitExam, fetchExamById } from "../services/examService";
 import "./ExamAttempt.css";
 
-const ExamAttempt = () => {
+export default function ExamAttempt({ exam: propExam, onComplete }) {
+  const { token } = useAuth();
   const { examId } = useParams();
   const navigate = useNavigate();
-
-  const [questions, setQuestions] = useState([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [answers, setAnswers] = useState({});
-  const [loading, setLoading] = useState(true);
-  const [timeLeft, setTimeLeft] = useState(30 * 60); // 30 minutes
-
-  // Timer
-  useEffect(() => {
-    if (timeLeft <= 0) return;
-    const timer = setInterval(() => setTimeLeft(prev => prev - 1), 1000);
-    return () => clearInterval(timer);
-  }, [timeLeft]);
-
-  // Load questions
-  useEffect(() => {
-    setTimeout(() => {
-      setQuestions([
-        {
-          _id: "q1",
-          questionText: "What is Java?",
-          options: ["Programming Language", "Database", "Operating System", "Browser"],
-          correctAnswer: "Programming Language",
-        },
-        {
-          _id: "q2",
-          questionText: "Explain the concept of OOP in your notebook.",
-          options: [], // theory
-          keywords: ["object", "class", "method", "inheritance", "polymorphism"],
-          totalPoints: 5,
-        },
-        {
-          _id: "q3",
-          questionText: "Which company developed Java?",
-          options: ["Sun Microsystems", "Microsoft", "Google", "Apple"],
-          correctAnswer: "Sun Microsystems",
-        },
-        {
-          _id: "q4",
-          questionText: "Define Polymorphism.",
-          options: [], // theory
-          keywords: ["object", "class", "method", "overloading", "overriding"],
-          totalPoints: 5,
-        },
-        {
-          _id: "q5",
-          questionText: "What is ML?",
-          options: [], // theory
-          keywords: ["machine learning", "algorithm", "data", "model"],
-          totalPoints: 5,
-        },
-        {
-          _id: "q6",
-          questionText: "What is React?",
-          options: ["Library", "Framework", "Language", "Tool"],
-          correctAnswer: "Library",
-        },
-        {
-          _id: "q7",
-          questionText: "What is a database?",
-          options: [], // theory
-          keywords: ["data", "storage", "table", "query", "sql"],
-          totalPoints: 5,
-        },
-        {
-          _id: "q8",
-          questionText: "What is inheritance in OOP?",
-          options: [], // theory
-          keywords: ["object", "class", "inheritance", "parent", "child"],
-        },
-        {
-          _id: "q9",
-          questionText: "What is a function?",
-          options: [], // theory  
-          keywords: ["function", "input", "output", "code", "reusable"],
-        },
-        {
-        _id: "q10",
-        questionText: "What is an operating system?",
-        options: ["Software", "Hardware", "Network", "Database"], // lowercase 'options'
-        correctAnswer: "Software",
-}
-      ]);
-      setLoading(false);
-    }, 1000);
-  }, [examId]);
-
-  const handleSelect = (questionId, option) => {
-    setAnswers({ ...answers, [questionId]: option });
-  };
-
-  const handleTextChange = (questionId, text) => {
-    setAnswers({ ...answers, [questionId]: text });
-  };
-
-  const handleNext = () => {
-    if (currentIndex < questions.length - 1) setCurrentIndex(currentIndex + 1);
-  };
-
-  const handlePrev = () => {
-    if (currentIndex > 0) setCurrentIndex(currentIndex - 1);
-  };
-
-  const handleSubmit = () => {
-  const resultData = {
-    examId: examId,
-    studentName: "Student 1",
-    answers: answers,
-    questions: questions,
-    date: new Date().toLocaleString(),
-  };
-
-  // Save result so teacher can see
-  localStorage.setItem(`result_${examId}`, JSON.stringify(resultData));
-
-  navigate(`/result/${examId}`, { state: resultData });
-};
-
-  const formatTime = (seconds) => {
-    const m = Math.floor(seconds / 60);
-    const s = seconds % 60;
-    return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
-  };
-
-  if (loading) return <p className="loading">Loading questions...</p>;
-  if (!questions.length) return <p>No questions found.</p>;
-
-  const q = questions[currentIndex];
-
-  return (
-    <div className="exam-container">
-      <div className="exam-timer">Time Left: {formatTime(timeLeft)}</div>
-      <div className="exam-flex-container">
-        <div className="exam-main">
-          <div className="exam-header">
-            <h2>Exam: {examId}</h2>
-            <p>Question {currentIndex + 1} of {questions.length}</p>
-          </div>
-
-          <div className="question-card">
-            <h3 className="question-text">{q.questionText}</h3>
-
-            <div className="options-container">
-              {q.options.length > 0 ? (
-                q.options.map((opt, i) => (
-                  <label key={i} className={`option-label ${answers[q._id] === opt ? "selected" : ""}`}>
-                    <input
-                      type="radio"
-                      name={q._id}
-                      checked={answers[q._id] === opt}
-                      onChange={() => handleSelect(q._id, opt)}
-                      className="radio"
-                    />
-                    {opt}
-                  </label>
-                ))
-              ) : (
-                <textarea
-                  placeholder="Type your answer here..."
-                  value={answers[q._id] || ""}
-                  onChange={(e) => handleTextChange(q._id, e.target.value)}
-                  rows={5}
-                  style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid #cbd5e1" }}
-                />
-              )}
-            </div>
-
-            <div className="nav-buttons">
-              <button onClick={handlePrev} className={`nav-btn ${currentIndex===0 ? 'disabled':''}`}>Previous</button>
-              {currentIndex===questions.length-1 ?
-                <button onClick={handleSubmit} className="nav-btn submit-btn">Submit</button> :
-                <button onClick={handleNext} className={`nav-btn ${!answers[q._id] ? 'disabled':''}`}>Next</button>
-              }
-            </div>
-          </div>
-        </div>
-
-        <div className="exam-sidebar">
-          <QuestionDashboard
-            questions={questions}
-            answers={answers}
-            currentIndex={currentIndex}
-            setCurrentIndex={setCurrentIndex}
-          />
-        </div>
-      </div>cd frontens
-      
-    </div>
-  );
-};
-
-export default ExamAttempt;
-=======
-import { useState, useEffect, useCallback } from "react";
-import { useAuth } from "../context/AuthContext";
-import { submitExam } from "../services/examService";
-
-export default function ExamAttempt({ exam, onComplete }) {
-  const { user } = useAuth();
+  const [exam, setExam] = useState(propExam);
+  const [examLoading, setExamLoading] = useState(!propExam);
+  const questions = Array.isArray(exam?.questions) ? exam.questions : [];
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState({});
-  const [timeLeft, setTimeLeft] = useState(exam.duration * 60);
+  const [timeLeft, setTimeLeft] = useState((exam?.duration || 60) * 60);
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const currentQuestion = exam.questions[currentQuestionIndex];
+  const currentQuestion = questions[currentQuestionIndex];
+
+  // Load exam data if not provided via props
+  useEffect(() => {
+    if (examId && !propExam) {
+      const loadExam = async () => {
+        try {
+          const examData = await fetchExamById(examId, token);
+          setExam(examData);
+        } catch (error) {
+          console.error("Error loading exam:", error);
+          alert("Failed to load exam. Redirecting to dashboard...");
+          navigate("/student/dashboard");
+        } finally {
+          setExamLoading(false);
+        }
+      };
+      loadExam();
+    }
+  }, [examId, propExam, token, navigate]);
+
+  const handleComplete = () => {
+    if (onComplete) {
+      onComplete();
+    } else {
+      navigate("/student/dashboard");
+    }
+  };
 
   const handleSubmit = useCallback(
     async (isAutoSubmit = false) => {
-      if (submitted) return;
-
-      if (!isAutoSubmit) {
-        const confirmSubmit = window.confirm(
-          "Are you sure you want to submit the exam?"
-        );
-        if (!confirmSubmit) return;
-      }
+      if (submitted || !questions.length) return;
 
       setLoading(true);
+
       try {
         const submissionData = {
           examId: exam._id,
-          userId: user?._id,
           answers: Object.entries(answers).map(([questionId, answer]) => ({
             questionId,
             answer,
           })),
         };
 
-        await submitExam(submissionData, localStorage.getItem("token"));
+        await submitExam(submissionData, token || localStorage.getItem("token"));
         setSubmitted(true);
-        if (!isAutoSubmit) alert("Exam submitted successfully!");
-        onComplete();
+        if (!isAutoSubmit) {
+          alert("Exam submitted successfully.");
+        }
+        
+        // Navigate to result page with result data
+        const resultData = {
+          questions: questions,
+          answers: answers,
+          examTitle: exam.title,
+          submittedAt: new Date().toISOString()
+        };
+        
+        console.log("Saving result data:", resultData);
+        console.log("Questions structure:", questions);
+        console.log("Answers structure:", answers);
+        
+        const resultId = `result_${Date.now()}`;
+        localStorage.setItem(`result_${resultId}`, JSON.stringify(resultData));
+        navigate(`/exam/result/${resultId}`, { state: resultData });
       } catch (error) {
         console.error(error);
-        alert("Submission failed");
+        alert(error.message || "Submission failed");
       } finally {
         setLoading(false);
       }
     },
-    [exam._id, answers, submitted, onComplete, user]
+    [answers, exam?._id, questions, submitted, token, navigate]
   );
 
   useEffect(() => {
@@ -257,96 +99,109 @@ export default function ExamAttempt({ exam, onComplete }) {
     }
 
     const timer = setInterval(() => {
-      setTimeLeft((prev) => prev - 1);
+      setTimeLeft((previous) => previous - 1);
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [timeLeft, submitted, handleSubmit]);
+  }, [handleSubmit, submitted, timeLeft]);
 
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${mins.toString().padStart(2, "0")}:${secs
-      .toString()
-      .padStart(2, "0")}`;
+    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
 
   const handleAnswerChange = (value) => {
-    setAnswers({
-      ...answers,
+    setAnswers((currentAnswers) => ({
+      ...currentAnswers,
       [currentQuestion._id]: value,
-    });
+    }));
   };
 
+  if (examLoading) {
+    return (
+      <div style={{ padding: "20px", textAlign: "center" }}>
+        <div className="spinner" />
+        <span>Loading exam...</span>
+      </div>
+    );
+  }
+
+  if (!questions.length) {
+    return (
+      <div style={{ padding: "20px" }}>
+        <h2>{exam?.title || "Exam"}</h2>
+        <p>No questions are available for this exam yet.</p>
+      </div>
+    );
+  }
+
+  const isMcq = currentQuestion?.type === "MCQ";
+  const isLongAnswer = currentQuestion?.type === "THEORY" || currentQuestion?.type === "CODING";
+
   return (
-    <div style={{ padding: "20px" }}>
-      <h2>Exam Attempt</h2>
+    <div className="exam-container">
+      <div className="exam-flex-container">
+        <div className="exam-main">
+          <h2>{exam.title}</h2>
+          <p>Time Left: {formatTime(timeLeft)}</p>
 
-      <p><strong>User:</strong> {user?.name || "Guest"}</p>
-      <p><strong>Time Left:</strong> {formatTime(timeLeft)}</p>
+          <div className="question-container">
+            <h3>Question {currentQuestionIndex + 1}</h3>
+            <p>{currentQuestion?.questionText}</p>
 
-      <hr />
+            {isMcq &&
+              currentQuestion?.options?.map((option) => (
+                <div key={option} className="option-label">
+                  <input
+                    type="radio"
+                    name="answer"
+                    value={option}
+                    checked={answers[currentQuestion._id] === option}
+                    onChange={() => handleAnswerChange(option)}
+                  />
+                  {option}
+                </div>
+              ))}
 
-      <h3>
-        Question {currentQuestionIndex + 1} of {exam.questions.length}
-      </h3>
-      <p>{currentQuestion?.questionText}</p>
-
-      {/* MCQ */}
-      {currentQuestion?.type === "mcq" &&
-        currentQuestion.options.map((opt, idx) => (
-          <div key={idx}>
-            <label>
-              <input
-                type="radio"
-                name="answer"
-                value={opt}
-                checked={answers[currentQuestion._id] === opt}
-                onChange={() => handleAnswerChange(opt)}
+            {isLongAnswer && (
+              <textarea
+                className="textarea-answer"
+                placeholder="Write your answer..."
+                value={answers[currentQuestion._id] || ""}
+                onChange={(event) => handleAnswerChange(event.target.value)}
               />
-              {opt}
-            </label>
+            )}
           </div>
-        ))}
 
-      {/* Text / Coding */}
-      {(currentQuestion?.type === "text" ||
-        currentQuestion?.type === "coding") && (
-        <textarea
-          rows="5"
-          cols="50"
-          placeholder="Write your answer..."
-          value={answers[currentQuestion._id] || ""}
-          onChange={(e) => handleAnswerChange(e.target.value)}
-        />
-      )}
+          <div className="question-navigation">
+            <div className="nav-buttons">
+              <button
+                className="nav-btn"
+                onClick={() => setCurrentQuestionIndex((previous) => previous - 1)}
+                disabled={currentQuestionIndex === 0}
+              >
+                Previous
+              </button>
 
-      <br /><br />
+              <button
+                className="nav-btn"
+                onClick={() => setCurrentQuestionIndex((previous) => previous + 1)}
+                disabled={currentQuestionIndex === questions.length - 1}
+              >
+                Next
+              </button>
 
-      <button
-        onClick={() =>
-          setCurrentQuestionIndex((prev) => prev - 1)
-        }
-        disabled={currentQuestionIndex === 0}
-      >
-        Previous
-      </button>
-
-      <button
-        onClick={() =>
-          setCurrentQuestionIndex((prev) => prev + 1)
-        }
-        disabled={currentQuestionIndex === exam.questions.length - 1}
-      >
-        Next
-      </button>
-
-      <br /><br />
-
-      <button onClick={() => handleSubmit(false)} disabled={loading}>
-        {loading ? "Submitting..." : "Submit Exam"}
-      </button>
+              <button className="nav-btn danger" onClick={() => handleSubmit(false)} disabled={loading}>
+                {loading ? "Submitting..." : "Submit Exam"}
+              </button>
+            </div>
+            <div className="question-counter">
+              Question {currentQuestionIndex + 1} of {questions.length}
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
->>>>>>> upstream/master

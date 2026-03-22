@@ -1,10 +1,12 @@
 import "./Navbar.css";
 import { useAuth } from "../../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 function getInitials(name = "") {
   return name
     .split(" ")
-    .map((n) => n[0])
+    .filter(Boolean)
+    .map((part) => part[0])
     .join("")
     .toUpperCase()
     .slice(0, 2);
@@ -19,13 +21,31 @@ function formatDate() {
   });
 }
 
-export default function Navbar({ onMenuToggle, activePage }) {
-  const { student } = useAuth();
+const STUDENT_TITLES = {
+  profile: "My Profile",
+  exams: "Examinations",
+  results: "My Results",
+};
 
-  const pageTitles = {
-    profile: "My Profile",
-    exams: "Examinations",
-    results: "My Results",
+const TEACHER_TITLES = {
+  home: "Teacher Dashboard",
+  "create-exam": "Create Exam",
+  submissions: "Submissions",
+  results: "Exam Results",
+  students: "Students",
+  profile: "Teacher Profile",
+};
+
+export default function Navbar({ onMenuToggle, activePage, role }) {
+  const { user, student, logout } = useAuth();
+  const navigate = useNavigate();
+  const currentRole = role || user?.role || "student";
+  const currentUser = currentRole === "teacher" ? user : student;
+  const pageTitles = currentRole === "teacher" ? TEACHER_TITLES : STUDENT_TITLES;
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
   };
 
   return (
@@ -47,12 +67,12 @@ export default function Navbar({ onMenuToggle, activePage }) {
         <span className="navbar__date">{formatDate()}</span>
 
         <button className="navbar__notif" title="Notifications">
-          🔔
+          {String.fromCodePoint(0x1F514)}
           <span className="navbar__notif-badge" />
         </button>
 
-        <div className="navbar__avatar" title={student?.name}>
-          {getInitials(student?.name)}
+        <div className="navbar__avatar" title={currentUser?.name} onClick={handleLogout}>
+          {getInitials(currentUser?.name)}
         </div>
       </div>
     </header>

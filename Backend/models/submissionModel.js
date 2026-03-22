@@ -37,20 +37,16 @@ const submissionSchema = new mongoose.Schema({
         enum: ['pending', 'checked'],
         default: 'pending'
     },
-<<<<<<< HEAD
-=======
     published: {
         type: Boolean,
         default: false
     },
->>>>>>> upstream/master
     submittedAt: {
         type: Date,
         default: Date.now
     }
 });
 
-// prevent a student from submitting the same exam twice and speed up lookups
 submissionSchema.index({ examId: 1, studentId: 1 }, { unique: true });
 submissionSchema.index({ studentId: 1 });
 submissionSchema.index({ examId: 1 });
@@ -58,4 +54,3 @@ submissionSchema.index({ examId: 1 });
 const Submission = mongoose.model('Submission', submissionSchema);
 
 module.exports = Submission;
-

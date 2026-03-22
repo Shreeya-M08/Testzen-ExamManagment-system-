@@ -7,7 +7,7 @@ const questionSchema = new mongoose.Schema({
     },
     type: {
         type: String,
-        enum: ['MCQ', 'THEORY'],
+        enum: ['MCQ', 'THEORY', 'CODING'],
         required: true
     },
     examId: {
@@ -16,13 +16,17 @@ const questionSchema = new mongoose.Schema({
         required: true,
         index: true
     },
-    // options are only relevant for MCQ questions
     options: {
         type: [String],
-        default: undefined // absence when not MCQ
+        default: undefined
     },
-    // for MCQ questions only
     correctAnswer: {
+        type: String
+    },
+    starterCode: {
+        type: String
+    },
+    expectedOutput: {
         type: String
     },
     marks: {
@@ -31,8 +35,7 @@ const questionSchema = new mongoose.Schema({
     }
 });
 
-// custom validation: make sure MCQ questions have options and a correctAnswer
-questionSchema.pre('validate', function(next) {
+questionSchema.pre('validate', function() {
     if (this.type === 'MCQ') {
         if (!this.options || this.options.length < 2) {
             this.invalidate('options', 'MCQ questions must have at least two options');
@@ -41,7 +44,6 @@ questionSchema.pre('validate', function(next) {
             this.invalidate('correctAnswer', 'MCQ questions must define a correctAnswer');
         }
     }
-    next();
 });
 
 module.exports = mongoose.model('Question', questionSchema);

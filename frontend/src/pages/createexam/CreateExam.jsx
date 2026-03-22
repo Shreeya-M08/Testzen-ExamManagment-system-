@@ -1,9 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+import { createExam } from '../../services/examService';
 import './CreateExam.css';
 
 const CreateExam = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     examName: '',
     subject: '',
@@ -18,7 +22,7 @@ const CreateExam = () => {
     questionText: '',
     options: ['', '', '', ''],
     correctAnswer: '',
-    questionType: 'mcq', // 'mcq' or 'theory'
+    questionType: 'mcq',
     marks: 1,
   });
 
@@ -84,7 +88,7 @@ const CreateExam = () => {
     setQuestions(questions.filter(q => q.id !== id));
   };
 
-  const handleSubmitExam = () => {
+  const handleSubmitExam = async () => {
     if (!formData.examName.trim()) {
       alert('Please enter exam name');
       return;
@@ -94,31 +98,48 @@ const CreateExam = () => {
       return;
     }
 
-    const examData = {
-      ...formData,
-      totalQuestions: questions.length,
-      totalMarks: questions.reduce((sum, q) => sum + q.marks, 0),
-      questions: questions,
-      createdAt: new Date(),
-    };
+    setLoading(true);
+    try {
+      const examData = {
+        title: formData.examName,
+        subject: formData.subject,
+        description: formData.description,
+        duration: formData.duration,
+        totalMarks: questions.reduce((sum, q) => sum + q.marks, 0),
+        questions: questions.map(q => ({
+          questionText: q.questionText,
+          type: q.questionType.toUpperCase(),
+          marks: q.marks,
+          options: q.questionType === 'mcq' ? q.options : [],
+          correctAnswer: q.questionType === 'mcq' ? q.correctAnswer : '',
+        })),
+        teacher: user?.name || "Teacher",
+        status: "published"
+      };
 
-    console.log('Exam Created:', examData);
-    setSubmitted(true);
-    
-    // Reset form after submission
-    setTimeout(() => {
-      setFormData({
-        examName: '',
-        subject: '',
-        duration: 30,
-        totalQuestions: 0,
-        totalMarks: 0,
-        description: '',
-      });
-      setQuestions([]);
-      setSubmitted(false);
-      navigate('/teacher-dashboard');
-    }, 2000);
+      await createExam(examData, localStorage.getItem('token'));
+      setSubmitted(true);
+      
+      // Reset form after submission
+      setTimeout(() => {
+        setFormData({
+          examName: '',
+          subject: '',
+          duration: 30,
+          totalQuestions: 0,
+          totalMarks: 0,
+          description: '',
+        });
+        setQuestions([]);
+        setSubmitted(false);
+        navigate('/teacher/dashboard');
+      }, 2000);
+    } catch (error) {
+      console.error('Error creating exam:', error);
+      alert('Failed to create exam. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -129,6 +150,12 @@ const CreateExam = () => {
         {submitted && (
           <div className="success-message">
             ✓ Exam created successfully! Redirecting...
+          </div>
+        )}
+
+        {loading && (
+          <div className="loading-message">
+            Creating exam... Please wait.
           </div>
         )}
 
@@ -311,15 +338,17 @@ const CreateExam = () => {
         <div className="form-actions">
           <button
             className="btn-cancel"
-            onClick={() => navigate('/teacher-dashboard')}
+            onClick={() => navigate('/teacher/dashboard')}
+            disabled={loading}
           >
             Cancel
           </button>
           <button
             className="btn-submit"
             onClick={handleSubmitExam}
+            disabled={loading}
           >
-            Create Exam
+            {loading ? 'Creating...' : 'Create Exam'}
           </button>
         </div>
       </div>

@@ -2,7 +2,6 @@ const questionService = require('../services/questionService');
 const { validationResult } = require('express-validator');
 
 exports.addQuestion = async (req, res, next) => {
-    // teacher only
     if (req.user.role !== 'Teacher') {
         return res.status(403).json({ message: 'Forbidden: teachers only' });
     }
@@ -25,12 +24,12 @@ exports.getQuestions = async (req, res, next) => {
     const { examId } = req.params;
     try {
         let questions = await questionService.getQuestionsByExam(examId);
-        // convert to plain objects to modify
-        questions = questions.map(q => q.toObject ? q.toObject() : q);
+        questions = questions.map((question) => (question.toObject ? question.toObject() : question));
+
         if (req.user.role !== 'Teacher') {
-            // student: strip correctAnswer
             questions = questions.map(({ correctAnswer, ...rest }) => rest);
         }
+
         res.json({ questions });
     } catch (err) {
         next(err);
@@ -64,14 +63,10 @@ exports.deleteQuestion = async (req, res, next) => {
     }
 
     try {
-<<<<<<< HEAD
         const deleted = await questionService.deleteQuestion(req.params.id);
         if (!deleted) {
             return res.status(404).json({ message: 'Question not found' });
         }
-=======
-        await questionService.deleteQuestion(req.params.id);
->>>>>>> upstream/master
         res.json({ message: 'Question deleted' });
     } catch (err) {
         next(err);

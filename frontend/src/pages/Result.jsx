@@ -9,18 +9,20 @@ const Result = () => {
 
   const [data] = useState(() => {
     if (location.state) {
+      console.log("Result data from location state:", location.state);
       return location.state;
     } else if (resultId) {
       const saved = JSON.parse(localStorage.getItem(`result_${resultId}`));
+      console.log("Result data from localStorage:", saved);
       if (saved) return saved;
       else {
         alert("Result not found!");
-        navigate("/");
+        navigate("/student/dashboard");
         return null;
       }
     } else {
       alert("Result not found!");
-      navigate("/");
+      navigate("/student/dashboard");
       return null;
     }
   });
@@ -31,7 +33,10 @@ const Result = () => {
 
   // Determine status per question
   const getStatus = (q) => {
-    const ans = answers[q._id];
+    const questionId = q._id || q.id || q.questionId;
+    const ans = answers[questionId];
+    console.log(`Question ${questionId} answer:`, ans, "Question:", q);
+    
     if (!ans || ans.trim() === "") return "not-attempted";
 
     if (q.correctAnswer) {
@@ -43,10 +48,13 @@ const Result = () => {
   };
 
   // Total marks & obtained marks
-  const totalMarks = questions.reduce((acc, q) => acc + (q.totalPoints || 1), 0);
+  const totalMarks = questions.reduce((acc, q) => acc + (q.marks || q.totalPoints || 1), 0);
   const obtainedMarks = questions.reduce((acc, q) => {
-    if (q.correctAnswer) {
-      return acc + ((answers[q._id] === q.correctAnswer) ? (q.totalPoints || 1) : 0);
+    const questionId = q._id || q.id || q.questionId;
+    const ans = answers[questionId];
+    
+    if (q.correctAnswer && ans === q.correctAnswer) {
+      return acc + (q.marks || q.totalPoints || 1);
     } else if (q.keywords && q.keywords.length > 0) {
       // For now, theory = 0 by default; manual marking can be added later
       return acc;
@@ -79,21 +87,24 @@ const Result = () => {
 
       {/* Question-wise details */}
       <div className="result-inner">
-        {questions.map((q, idx) => (
-          <div key={q._id} className={`result-box ${getStatus(q)}`}>
-            <strong>Q{idx + 1}:</strong> {q.questionText} <br />
-            <strong>Your Answer:</strong> {answers[q._id] || "—"} <br />
-            {q.correctAnswer && (
-              <>
-                <strong>Correct Answer:</strong> {q.correctAnswer}
-              </>
-            )}
-          </div>
-        ))}
+        {questions.map((q, idx) => {
+          const questionId = q._id || q.id || q.questionId;
+          return (
+            <div key={questionId} className={`result-box ${getStatus(q)}`}>
+              <strong>Q{idx + 1}:</strong> {q.questionText || q.text} <br />
+              <strong>Your Answer:</strong> {answers[questionId] || "—"} <br />
+              {q.correctAnswer && (
+                <>
+                  <strong>Correct Answer:</strong> {q.correctAnswer}
+                </>
+              )}
+            </div>
+          );
+        })}
       </div>
 
-      <button className="back-btn" onClick={() => navigate("/")}>
-        Go Back
+      <button className="back-btn" onClick={() => navigate("/student/dashboard")}>
+        Back to Dashboard
       </button>
     </div>
   );

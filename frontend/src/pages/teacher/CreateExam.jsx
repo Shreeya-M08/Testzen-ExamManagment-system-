@@ -1,9 +1,11 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { createExam } from "../../services/examService";
 
 export default function CreateExam({ onNavigate }) {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [examData, setExamData] = useState({
     title: "",
@@ -86,7 +88,7 @@ export default function CreateExam({ onNavigate }) {
 
       await createExam(payload, localStorage.getItem('token'));
       alert(`Exam ${publish ? 'created and published' : 'saved as draft'} successfully!`);
-      onNavigate("home");
+      navigate("/teacher/dashboard");
     } catch (error) {
       console.error("Error creating exam:", error);
       alert("Failed to create exam. Please try again.");
@@ -294,7 +296,7 @@ export default function CreateExam({ onNavigate }) {
       </div>
 
       <div className="action-buttons">
-        <button className="btn btn-ghost" onClick={() => onNavigate("home")}>
+        <button className="btn btn-ghost" onClick={() => navigate("/teacher/dashboard")}>
           Cancel
         </button>
         <div className="publish-buttons">

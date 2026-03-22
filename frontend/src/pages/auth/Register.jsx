@@ -1,32 +1,41 @@
-import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { registerUser } from '../../services/authService'
-import '../../styles/auth.css'
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { registerUser } from "../../services/authService";
+import "../../styles/auth.css";
 
 const Register = () => {
-  const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [role, setRole] = useState('student')
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [role, setRole] = useState("student");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   const handleRegister = async (event) => {
-    event.preventDefault()
-    setError('')
-    setLoading(true)
+    event.preventDefault();
+    setError("");
+    setLoading(true);
+
+    const nameParts = name.trim().split(/\s+/).filter(Boolean);
+    const firstname = nameParts.shift() || "";
+    const lastname = nameParts.join(" ") || firstname;
 
     try {
-await registerUser({ fullname: {firstname: name.split(' ')[0], lastname: name.split(' ').slice(1).join(' ') || name}, email, password })
-      navigate('/login')
+      await registerUser({
+        fullname: { firstname, lastname },
+        email,
+        password,
+        role,
+      });
+      navigate("/login");
     } catch (err) {
-      setError(err.response?.data?.message || 'Unable to register. Please try again.')
+      setError(err.response?.data?.message || err.message || "Unable to register. Please try again.");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="auth-page">
@@ -41,7 +50,7 @@ await registerUser({ fullname: {firstname: name.split(' ')[0], lastname: name.sp
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-placeholder="First Last Name (required for both)"
+            placeholder="First Last Name"
             required
           />
 
@@ -74,7 +83,7 @@ placeholder="First Last Name (required for both)"
           {error && <div className="error-text">{error}</div>}
 
           <button type="submit" className="auth-btn" disabled={loading}>
-            {loading ? 'Creating...' : 'Register'}
+            {loading ? "Creating..." : "Register"}
           </button>
         </form>
 
@@ -85,7 +94,7 @@ placeholder="First Last Name (required for both)"
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Register
+export default Register;

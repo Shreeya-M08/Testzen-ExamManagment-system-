@@ -1,7 +1,5 @@
-<<<<<<< HEAD
+@import "./styles/Global.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-=======
-@import './styles/Global.css';
->>>>>>> upstream/master

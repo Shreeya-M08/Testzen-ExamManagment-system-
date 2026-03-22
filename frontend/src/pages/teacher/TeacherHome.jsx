@@ -1,183 +1,148 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import { fetchExams, fetchSubmissions, fetchStudents } from "../services/examService";
+import { fetchExams } from "../../services/examService";
+
 export default function TeacherHome({ onNavigate }) {
-  const { token } = useAuth();
-
-  const [data, setData] = useState({
-    exams: [],
-    submissions: [],
-    students: []
-  });
-
+  const { user, token } = useAuth();
+  const navigate = useNavigate();
+  const [exams, setExams] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!token) {
-      console.error("Token missing");
-      setLoading(false);
-      return;
-    }
-
-    const loadData = async () => {
+    const loadExams = async () => {
       try {
-        const [e, s, st] = await Promise.all([
-          fetchExams(token),
-          fetchSubmissions(token),
-          fetchStudents(token)
-        ]);
-
-        console.log("API DATA:", e, s, st); // DEBUG
-
-        setData({
-          exams: Array.isArray(e?.exams) ? e.exams : [],
-          submissions: Array.isArray(s?.submissions) ? s.submissions : [],
-          students: Array.isArray(st?.students) ? st.students : []
-        });
-
+        if (!token) return;
+        
+        const examsData = await fetchExams(token);
+        setExams(Array.isArray(examsData?.exams) ? examsData.exams : []);
       } catch (error) {
-        console.error("Error loading dashboard:", error);
+        console.error("Error loading exams:", error);
       } finally {
         setLoading(false);
       }
     };
 
-    loadData();
+    loadExams();
   }, [token]);
 
-  if (loading) {
-    return (
-      <div className="loading-center">
-        <div className="spinner"></div>
-        <span>Loading...</span>
-      </div>
-    );
-  }
-
-  const { exams, submissions, students } = data;
-
-  const liveExams = exams.filter((e) => e?.status === "live").length;
-  const pending = submissions.filter((s) => s?.status === "pending_review").length;
+  const quickActions = [
+    {
+      title: "Create New Exam",
+      description: "Build a new examination with questions",
+      icon: "➕",
+      action: () => navigate("/teacher/create-exam"),
+      color: "#3b82f6"
+    },
+    {
+      title: "View Submissions",
+      description: "Check student exam submissions",
+      icon: "📋",
+      action: () => onNavigate("submissions"),
+      color: "#10b981"
+    },
+    {
+      title: "Manage Results",
+      description: "Publish and manage exam results",
+      icon: "📊",
+      action: () => onNavigate("results"),
+      color: "#f59e0b"
+    },
+    {
+      title: "View Students",
+      description: "Manage enrolled students",
+      icon: "👥",
+      action: () => onNavigate("students"),
+      color: "#8b5cf6"
+    }
+  ];
 
   return (
     <div className="fade-up">
+      <div className="dashboard__page-header">
+        <h1 className="dashboard__page-title">Welcome, {user?.name || "Teacher"}!</h1>
+        <p className="dashboard__page-sub">Manage your exams and track student progress</p>
+      </div>
 
-      {/* Stats */}
-      <div className="stats-grid">
-        <div className="stat-card">
-          <div className="stat-card__icon">📝</div>
-          <span className="stat-card__value">{exams.length}</span>
-          <span className="stat-card__label">Total Exams</span>
-        </div>
-
-        <div className="stat-card">
-          <div className="stat-card__icon">🔴</div>
-          <span className="stat-card__value">{liveExams}</span>
-          <span className="stat-card__label">Live Now</span>
-        </div>
-
-        <div className="stat-card">
-          <div className="stat-card__icon">📋</div>
-          <span className="stat-card__value">{submissions.length}</span>
-          <span className="stat-card__label">Submissions</span>
-        </div>
-
-        <div className="stat-card">
-          <div className="stat-card__icon">⏳</div>
-          <span className="stat-card__value">{pending}</span>
-          <span className="stat-card__label">Pending Review</span>
-        </div>
-
-        <div className="stat-card">
-          <div className="stat-card__icon">🎓</div>
-          <span className="stat-card__value">{students.length}</span>
-          <span className="stat-card__label">Students</span>
+      <div className="quick-actions">
+        <h2>Quick Actions</h2>
+        <div className="action-grid">
+          {quickActions.map((action, index) => (
+            <button
+              key={index}
+              className="action-card"
+              onClick={action.action}
+              style={{ borderLeftColor: action.color }}
+            >
+              <div className="action-icon">{action.icon}</div>
+              <h3>{action.title}</h3>
+              <p>{action.description}</p>
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* Quick Actions */}
-      <div className="section">
-        <div className="section-title">⚡ Quick Actions</div>
-
-        <div style={{ display: "flex", gap: "0.85rem", flexWrap: "wrap" }}>
-          <button className="btn btn-primary" onClick={() => onNavigate("create-exam")}>
-            ✚ Create Exam
-          </button>
-
-          <button className="btn btn-ghost" onClick={() => onNavigate("submissions")}>
-            📋 Review Submissions
-          </button>
-
-          <button className="btn btn-ghost" onClick={() => onNavigate("results")}>
-            📊 View Results
-          </button>
-
-          <button className="btn btn-ghost" onClick={() => onNavigate("students")}>
-            🎓 View Students
-          </button>
+      <div className="dashboard-stats">
+        <h2>Overview</h2>
+        <div className="stats-grid">
+          <div className="stat-card">
+            <div className="stat-value">{exams.length}</div>
+            <div className="stat-label">Total Exams</div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-value">{exams.filter(e => e.status === 'published').length}</div>
+            <div className="stat-label">Published Exams</div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-value">0</div>
+            <div className="stat-label">Pending Submissions</div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-value">0</div>
+            <div className="stat-label">Active Students</div>
+          </div>
         </div>
       </div>
 
-      {/* Recent Exams */}
-      <div className="section">
-        <div className="section-title">📅 Recent Exams</div>
-
-        {exams.length === 0 ? (
-          <div className="card" style={{ padding: "2rem" }}>
+      <div className="recent-exams">
+        <h2>Your Recent Exams</h2>
+        <div className="exam-list">
+          {exams.length === 0 ? (
             <div className="empty-state">
-              <div className="empty-state-icon">📭</div>
-              <h3>No exams yet</h3>
-              <p>Create your first exam to get started.</p>
+              <div className="empty-state-icon">📝</div>
+              <h3>No exams created yet</h3>
+              <p>Create your first exam to get started!</p>
+              <button className="btn btn-primary" onClick={() => navigate("/teacher/create-exam")}>
+                Create Exam
+              </button>
             </div>
-          </div>
-        ) : (
-          <div className="card table-wrap">
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Title</th>
-                  <th>Subject</th>
-                  <th>Questions</th>
-                  <th>Status</th>
-                  <th>Created</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {exams.slice(0, 5).map((exam) => (
-                  <tr key={exam?._id || Math.random()}>
-                    <td style={{ fontWeight: 600 }}>{exam?.title || "Untitled"}</td>
-                    <td>{exam?.subject || "—"}</td>
-                    <td>{exam?.questions?.length || 0}</td>
-
-                    <td>
-                      <span
-                        className={`badge ${
-                          exam?.status === "live"
-                            ? "badge-success"
-                            : exam?.status === "completed"
-                            ? "badge-gray"
-                            : "badge-info"
-                        }`}
-                      >
-                        {exam?.status || "unknown"}
-                      </span>
-                    </td>
-
-                    <td>
-                      {exam?.createdAt
-                        ? new Date(exam.createdAt).toLocaleDateString("en-IN")
-                        : "—"}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-
-            </table>
-          </div>
-        )}
+          ) : (
+            exams.slice(0, 5).map((exam, index) => (
+              <div key={exam._id} className="exam-item">
+                <div className="exam-info">
+                  <h4>{exam.title}</h4>
+                  <p>{exam.subject} • {exam.duration} mins • {exam.questions?.length || 0} questions</p>
+                </div>
+                <div className="exam-status">
+                  <span className={`status-badge ${exam.status === 'published' ? 'published' : 'draft'}`}>
+                    {exam.status === 'published' ? 'Published' : 'Draft'}
+                  </span>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
       </div>
 
+      <div className="recent-activity">
+        <h2>Recent Activity</h2>
+        <div className="activity-list">
+          <div className="empty-state">
+            <div className="empty-state-icon">📝</div>
+            <p>No recent activity</p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

@@ -5,15 +5,15 @@ const jwt = require('jsonwebtoken');
 const userSchema = new mongoose.Schema({
     fullname: {
         firstname: {
-        type: String,
-        required: true,
-        minlength: [3, 'First name must be at least 3 characters long']
-    },
-    lastname: {
-        type: String,
-        required: true,
-        minlength: [3, 'Last name must be at least 3 characters long']
-    },
+            type: String,
+            required: true,
+            minlength: [3, 'First name must be at least 3 characters long']
+        },
+        lastname: {
+            type: String,
+            required: true,
+            minlength: [3, 'Last name must be at least 3 characters long']
+        },
     },
     email: {
         type: String,
@@ -23,11 +23,23 @@ const userSchema = new mongoose.Schema({
     },
     password: {
         type: String,
-        required: true, 
+        required: true,
         select: false,
     },
+    phone: {
+        type: String
+    },
+    department: {
+        type: String
+    },
+    enrollmentNo: {
+        type: String
+    },
+    semester: {
+        type: String
+    },
     role: {
-        type: String,   
+        type: String,
         enum: ['Teacher', 'student'],
         default: 'student'
     },
@@ -35,23 +47,19 @@ const userSchema = new mongoose.Schema({
         type: Date,
         default: Date.now
     }
-
 });
 
 userSchema.methods.generateAuthToken = function() {
-    const token = jwt.sign({ _id: this._id, role: this.role }, process.env.JWT_SECRET, { expiresIn: '24h' });
-    return token;
+    return jwt.sign({ _id: this._id, role: this.role }, process.env.JWT_SECRET, { expiresIn: '24h' });
 };
 
 userSchema.methods.comparePassword = async function(password) {
-    // bcrypt.compare will handle the comparison against the stored hash
-    return await bcrypt.compare(password, this.password);
+    return bcrypt.compare(password, this.password);
 };
 
-// static (class) method to hash a password; we generate a salt internally
 userSchema.statics.hashPassword = async function(password) {
     const salt = await bcrypt.genSalt(10);
-    return await bcrypt.hash(password, salt);
+    return bcrypt.hash(password, salt);
 };
 
 const UserModel = mongoose.model('User', userSchema);

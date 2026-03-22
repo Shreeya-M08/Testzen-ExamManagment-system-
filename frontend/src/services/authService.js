@@ -1,20 +1,13 @@
-import axios from 'axios'
+import { apiFetch } from "./api";
 
-const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000',
-  headers: {
-    'Content-Type': 'application/json',
-  },
-})
+export const loginUser = (data) =>
+  apiFetch("/auth/login", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
 
-export const loginUser = async (data) => {
-  const response = await api.post('/auth/login', data)
-  return response.data
-}
-
-export const registerUser = async (data) => {
-  const response = await api.post('/auth/register', data)
-  return response.data
-}
-
-export default api
+export const registerUser = (data) =>
+  apiFetch("/auth/register", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });

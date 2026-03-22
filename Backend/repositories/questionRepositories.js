@@ -13,7 +13,7 @@ exports.findById = function(id) {
 };
 
 exports.update = function(id, changes) {
-    return Question.findByIdAndUpdate(id, changes, { new: true });
+    return Question.findByIdAndUpdate(id, changes, { returnDocument: 'after' });
 };
 
 exports.delete = function(id) {

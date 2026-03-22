@@ -32,6 +32,16 @@
   font-weight: 500;
 }
 
+.loading-message {
+  background-color: #d1ecf1;
+  color: #0c5460;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  border-left: 4px solid #17a2b8;
+  font-weight: 500;
+}
+
 /* Exam Details Section */
 .exam-details-section,
 .questions-section {

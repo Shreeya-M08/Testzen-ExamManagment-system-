@@ -4,7 +4,6 @@ const { body, param } = require('express-validator');
 const authMiddleware = require('../middleware/authMiddleware');
 const submissionController = require('../controllers/submissionController');
 
-// student submits exam (preferred root path)
 router.post(
     '/',
     authMiddleware.authUser,
@@ -17,7 +16,6 @@ router.post(
     submissionController.submitExam
 );
 
-// keep legacy alias for backwards compatibility
 router.post(
     '/submit',
     authMiddleware.authUser,
@@ -30,10 +28,9 @@ router.post(
     submissionController.submitExam
 );
 
-// student views own submissions
+router.get('/', authMiddleware.authUser, submissionController.getAllSubmissions);
 router.get('/my', authMiddleware.authUser, submissionController.getMySubmissions);
 
-// teacher views all submissions for an exam
 router.get(
     '/exam/:examId',
     authMiddleware.authUser,
@@ -41,17 +38,20 @@ router.get(
     submissionController.getSubmissionsByExam
 );
 
-// teacher evaluates a submission
+router.put(
+    '/:submissionId/grade',
+    authMiddleware.authUser,
+    [param('submissionId').notEmpty().withMessage('submissionId parameter is required')],
+    submissionController.evaluateSubmission
+);
+
 router.put(
     '/evaluate/:submissionId',
     authMiddleware.authUser,
-    [
-        param('submissionId').notEmpty().withMessage('submissionId parameter is required'),
-        body('marks').isArray({ min: 1 }).withMessage('marks must be a non-empty array'),
-        body('marks.*.questionId').notEmpty().withMessage('each mark entry needs a questionId'),
-        body('marks.*.marks').isNumeric().withMessage('each mark entry needs a numeric marks value')
-    ],
+    [param('submissionId').notEmpty().withMessage('submissionId parameter is required')],
     submissionController.evaluateSubmission
 );
+
+router.get('/:id', authMiddleware.authUser, submissionController.getSubmissionById);
 
 module.exports = router;
