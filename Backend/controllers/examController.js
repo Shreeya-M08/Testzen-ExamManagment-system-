@@ -1,4 +1,4 @@
-const examService = require("../services/examServices");
+const examService = require("../services/examService");
 
 exports.createExam = async (req, res) => {
   try {

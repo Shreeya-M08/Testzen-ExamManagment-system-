@@ -29,8 +29,37 @@ module.exports.loginUser = async (req, res, next) => {
         return res.status(400).json({ errors: errors.array() });
     }
 
-    const { email, password } = req.body;
+    const { email, password, role } = req.body;
     try {
+        // TEST MODE: Accept any credentials in development
+        if (process.env.NODE_ENV !== 'production') {
+            const testUser = {
+                _id: 'test_user_' + Math.random().toString(36).substr(2, 9),
+                firstname: email.split('@')[0],
+                lastname: 'User',
+                email: email,
+                role: role || 'student',
+                generateAuthToken: function() {
+                    return 'test_token_' + Math.random().toString(36).substr(2, 20);
+                }
+            };
+            
+            const token = testUser.generateAuthToken();
+            res.cookie('token', token);
+            
+            return res.json({ 
+                token, 
+                user: { 
+                    _id: testUser._id,
+                    firstname: testUser.firstname,
+                    lastname: testUser.lastname,
+                    email: testUser.email,
+                    role: testUser.role 
+                } 
+            });
+        }
+
+        // PRODUCTION MODE: Check against database
         const user = await userService.findByEmail(email);
         if (!user) {
             return res.status(400).json({ message: 'Invalid credentials' });

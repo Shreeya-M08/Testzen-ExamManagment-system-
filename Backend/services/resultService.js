@@ -1,4 +1,4 @@
-const submissionService = require('./submissionServices');
+const submissionService = require('./submissionService');
 const Result = require('../models/resultModel');
 
 async function getMyResults(studentId) {

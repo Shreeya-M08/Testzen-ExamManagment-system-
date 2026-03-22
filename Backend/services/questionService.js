@@ -1,4 +1,4 @@
-const questionRepo = require('../repositories/questionRepository');
+const questionRepo = require('../repositories/questionRepositories');
 const examRepo = require('../repositories/examRepositories');
 
 async function createQuestion(examId, questionData) {
@@ -17,8 +17,8 @@ async function createQuestion(examId, questionData) {
 }
 
 async function getQuestionsByExam(examId, userRole) {
-    return Question.find(
-        { exam: examId },                   // filter by exam
+    return questionRepo.find(
+        { examId: examId },                   // filter by exam
         userRole === 'Teacher' ? {} : { correctAnswer: 0 } // hide answers for students
     );
 }

@@ -8,13 +8,10 @@ import TeacherDashboard from '../pages/TeacherDashboard'
 import { getToken, getRole } from '../utils/auth'
 import ExamAttempt from '../pages/ExamAttempt'
 import Result from '../pages/Result'
+import { CreateExam, ExamResults } from '../pages/createexam'
 // import CreateExam from '../pages/CreateExam' // removed missing file
 
 const ProtectedRoute = ({ element, requiredRole }) => {
-  // TEMP login for testing
-  localStorage.setItem("token", "testtoken");
-  localStorage.setItem("role", "student");
-
   const token = getToken();
   const role = getRole();
 
@@ -44,6 +41,8 @@ const AppRoutes = () => {
         path="/teacher/dashboard"
         element={<ProtectedRoute element={<TeacherDashboard />} requiredRole="teacher" />}
       />
+      <Route path="/create-exam" element={<CreateExam />} />
+      <Route path="/exam-results" element={<ExamResults />} />
       <Route
   path="/exam/:examId"
   element={

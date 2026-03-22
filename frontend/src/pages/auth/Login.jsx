@@ -19,16 +19,16 @@ const Login = () => {
     setLoading(true)
 
     try {
-const data = await loginUser({ email, password })
+      const data = await loginUser({ email, password, role })
       setToken(data.token)
-setRole(data.user.role)
+      setRole(data.user.role)
 
-if (data.user.role === 'student') {
+      if (data.user.role === 'student') {
         navigate('/student/dashboard')
         return
       }
 
-if (data.user.role === 'teacher') {
+      if (data.user.role === 'teacher') {
         navigate('/teacher/dashboard')
         return
       }
