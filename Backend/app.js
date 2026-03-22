@@ -12,10 +12,14 @@ const questionRoutes = require('./routes/questionRoutes');
 const resultRoutes = require('./routes/resultRoutes');
 
 // middlewares
+<<<<<<< HEAD
 app.use(cors({
   origin: ['http://localhost:5173', 'http://localhost:5174', 'http://127.0.0.1:5173', 'http://127.0.0.1:5174'],
   credentials: true
 }));
+=======
+app.use(cors());
+>>>>>>> upstream/master
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -47,10 +51,13 @@ app.use((err, req, res, next) => {
     res.status(500).json({ message: 'Internal server error' });
 });
 
+<<<<<<< HEAD
 // app.js, at the end
 app.use((err, req, res, next) => {
     console.error(err.stack); // logs the error for debugging
     res.status(500).json({ message: 'Something went wrong', error: err.message });
 });
 
+=======
+>>>>>>> upstream/master
 module.exports = app;

@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 const submissionService = require('../services/submissionService');
+=======
+const submissionService = require('../services/submissionServices');
+>>>>>>> upstream/master
 const { validationResult } = require('express-validator');
 
 module.exports.submitExam = async (req, res, next) => {

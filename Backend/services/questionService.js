@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 const questionRepo = require('../repositories/questionRepositories');
+=======
+const questionRepo = require('../repositories/questionRepository');
+>>>>>>> upstream/master
 const examRepo = require('../repositories/examRepositories');
 
 async function createQuestion(examId, questionData) {
@@ -16,6 +20,7 @@ async function createQuestion(examId, questionData) {
     return question;
 }
 
+<<<<<<< HEAD
 async function getQuestionsByExam(examId, userRole) {
     return questionRepo.find(
         { examId: examId },                   // filter by exam
@@ -24,6 +29,13 @@ async function getQuestionsByExam(examId, userRole) {
 }
 
 
+=======
+async function getQuestionsByExam(examId) {
+    if (!examId) throw new Error('examId is required');
+    return questionRepo.findByExam(examId);
+}
+
+>>>>>>> upstream/master
 async function updateQuestion(id, changes) {
     if (!id) throw new Error('question id is required');
     const updated = await questionRepo.update(id, changes);

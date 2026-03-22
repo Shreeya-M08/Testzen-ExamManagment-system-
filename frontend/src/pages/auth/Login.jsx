@@ -1,17 +1,29 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { loginUser } from '../../services/authService'
+<<<<<<< HEAD
 import { getRole, setRole, setToken } from '../../utils/auth'
+=======
+import { setRole, setToken } from '../../utils/auth'
+import { useAuth } from '../../context/AuthContext'
+>>>>>>> upstream/master
 import '../../styles/auth.css'
 
 const Login = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+<<<<<<< HEAD
   const [role, setRoleState] = useState('student')
+=======
+>>>>>>> upstream/master
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
   const navigate = useNavigate()
+<<<<<<< HEAD
+=======
+  const { login } = useAuth()
+>>>>>>> upstream/master
 
   const handleLogin = async (event) => {
     event.preventDefault()
@@ -19,10 +31,20 @@ const Login = () => {
     setLoading(true)
 
     try {
+<<<<<<< HEAD
       const data = await loginUser({ email, password, role })
       setToken(data.token)
       setRole(data.user.role)
 
+=======
+      const data = await loginUser({ email, password })
+      setToken(data.token)
+      setRole(data.user.role)
+
+      // Update AuthContext
+      login(data.user, data.token)
+
+>>>>>>> upstream/master
       if (data.user.role === 'student') {
         navigate('/student/dashboard')
         return
@@ -45,7 +67,11 @@ const Login = () => {
     <div className="auth-page">
       <div className="auth-card">
         <h2>Login</h2>
+<<<<<<< HEAD
         <p className="small">Login as student or teacher</p>
+=======
+        <p className="small">Login to your account</p>
+>>>>>>> upstream/master
 
         <form className="auth-form" onSubmit={handleLogin}>
           <label htmlFor="email">Email</label>
@@ -68,12 +94,15 @@ const Login = () => {
             required
           />
 
+<<<<<<< HEAD
           <label htmlFor="role">Role</label>
           <select id="role" value={role} onChange={(e) => setRoleState(e.target.value)}>
             <option value="student">Student</option>
             <option value="teacher">Teacher</option>
           </select>
 
+=======
+>>>>>>> upstream/master
           {error && <div className="error-text">{error}</div>}
 
           <button type="submit" className="auth-btn" disabled={loading}>
@@ -86,10 +115,13 @@ const Login = () => {
             Don't have an account? <a href="/register">Create account</a>
           </p>
         </div>
+<<<<<<< HEAD
 
         <div className="current-role">
           Current role in storage: <strong>{getRole() || 'none'}</strong>
         </div>
+=======
+>>>>>>> upstream/master
       </div>
     </div>
   )

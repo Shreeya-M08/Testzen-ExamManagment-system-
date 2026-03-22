@@ -36,12 +36,22 @@ router.get(
     resultController.getExamResults
 );
 
+<<<<<<< HEAD
 router.get(
     '/:resultId',
     authMiddleware.authUser,
     roleMiddleware.requireRole(['student']),
     [param('resultId').notEmpty().withMessage('resultId is required')],
     resultController.getResultById
+=======
+// teacher publishes a result
+router.put(
+    '/publish/:submissionId',
+    authMiddleware.authUser,
+    roleMiddleware.requireRole(['Teacher']),
+    [param('submissionId').notEmpty().withMessage('submissionId parameter is required')],
+    resultController.publishResult
+>>>>>>> upstream/master
 );
 
 module.exports = router;

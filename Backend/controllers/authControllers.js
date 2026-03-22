@@ -14,7 +14,11 @@ module.exports.registerUser = async (req, res, next) => {
 
     try {
         const user = await userService.createUser({
+<<<<<<< HEAD
             firstname: fullname.firstname, lastname: fullname.lastname, email, password });
+=======
+             firstname: fullname.firstname, lastname: fullname.lastname, email, password });
+>>>>>>> upstream/master
         const token = user.generateAuthToken();
         res.status(201).json({ token, user });
     } catch (err) {
@@ -29,6 +33,7 @@ module.exports.loginUser = async (req, res, next) => {
         return res.status(400).json({ errors: errors.array() });
     }
 
+<<<<<<< HEAD
     const { email, password, role } = req.body;
     try {
         // TEST MODE: Accept any credentials in development
@@ -60,6 +65,10 @@ module.exports.loginUser = async (req, res, next) => {
         }
 
         // PRODUCTION MODE: Check against database
+=======
+    const { email, password } = req.body;
+    try {
+>>>>>>> upstream/master
         const user = await userService.findByEmail(email);
         if (!user) {
             return res.status(400).json({ message: 'Invalid credentials' });

@@ -64,10 +64,14 @@ exports.deleteQuestion = async (req, res, next) => {
     }
 
     try {
+<<<<<<< HEAD
         const deleted = await questionService.deleteQuestion(req.params.id);
         if (!deleted) {
             return res.status(404).json({ message: 'Question not found' });
         }
+=======
+        await questionService.deleteQuestion(req.params.id);
+>>>>>>> upstream/master
         res.json({ message: 'Question deleted' });
     } catch (err) {
         next(err);

@@ -43,6 +43,7 @@ exports.grade = async (req, res, next) => {
     }
 };
 
+<<<<<<< HEAD
 exports.getResultById = async (req, res, next) => {
     try {
         const { resultId } = req.params;
@@ -58,3 +59,17 @@ exports.getResultById = async (req, res, next) => {
         next(err);
     }
 };
+=======
+exports.publishResult = async (req, res, next) => {
+    if (req.user.role !== 'Teacher') {
+        return res.status(403).json({ message: 'Forbidden: teachers only' });
+    }
+    const { submissionId } = req.params;
+    try {
+        const updated = await resultService.publishResult(submissionId);
+        res.json({ message: 'Result published', submission: updated });
+    } catch (err) {
+        next(err);
+    }
+};
+>>>>>>> upstream/master

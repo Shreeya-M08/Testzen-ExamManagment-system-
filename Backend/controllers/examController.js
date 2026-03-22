@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 const examService = require("../services/examService");
+=======
+const examService = require("../services/examServices");
+>>>>>>> upstream/master
 
 exports.createExam = async (req, res) => {
   try {
@@ -48,3 +52,15 @@ exports.deleteExam = async (req, res) => {
   }
 };
 
+<<<<<<< HEAD
+=======
+exports.publishExam = async (req, res) => {
+  try {
+    const exam = await examService.publishExam(req.params.id);
+    res.json(exam);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+>>>>>>> upstream/master

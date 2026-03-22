@@ -5,6 +5,16 @@ const examSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+<<<<<<< HEAD
+=======
+    subject: {
+        type: String,
+        required: true
+    },
+    description: {
+        type: String
+    },
+>>>>>>> upstream/master
     type: {
         type: String,
         enum: ['MCQ', 'LONG'],
@@ -20,6 +30,22 @@ const examSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+<<<<<<< HEAD
+=======
+    duration: {
+        type: Number, // in minutes
+        default: 60
+    },
+    status: {
+        type: String,
+        enum: ['draft', 'published'],
+        default: 'draft'
+    },
+    teacher: {
+        type: String,
+        required: true
+    },
+>>>>>>> upstream/master
     createdAt: {
         type: Date,
         default: Date.now

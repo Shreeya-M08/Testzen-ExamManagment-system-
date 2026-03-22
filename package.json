@@ -1,6 +1,10 @@
 {
   "dependencies": {
+<<<<<<< HEAD
     "dotenv": "^17.3.1",
     "react-router-dom": "^7.13.1"
+=======
+    "dotenv": "^17.3.1"
+>>>>>>> upstream/master
   }
 }

@@ -1,5 +1,6 @@
 import React from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
+<<<<<<< HEAD
 import Home from '../pages/Home'
 import Login from '../pages/auth/Login'
 import Register from '../pages/auth/Register'
@@ -26,6 +27,29 @@ const ProtectedRoute = ({ element, requiredRole }) => {
   return element;
 };
 
+=======
+import Home from '../pages/Home/Home'
+import Login from '../pages/auth/Login'
+import Register from '../pages/auth/Register'
+import StudentDashboard from '../pages/StudentDashboard'
+import TeacherDashboard from '../pages/teacher/TeacherDashboard'
+import { getToken, getRole } from '../utils/auth'
+
+const ProtectedRoute = ({ element, requiredRole }) => {
+  const token = getToken()
+  const role = getRole()
+
+  if (!token) {
+    return <Navigate to="/login" replace />
+  }
+
+  if (requiredRole && role !== requiredRole) {
+    return <Navigate to="/" replace />
+  }
+
+  return element
+}
+>>>>>>> upstream/master
 
 const AppRoutes = () => {
   return (
@@ -35,6 +59,7 @@ const AppRoutes = () => {
       <Route path="/register" element={<Register />} />
       <Route
         path="/student/dashboard"
+<<<<<<< HEAD
         element={<ProtectedRoute element={<StudentDashboard />} requiredRole="student" />}
       />
       <Route
@@ -66,6 +91,15 @@ const AppRoutes = () => {
 
       <Route path="*" element={<Navigate to="/" replace />} />
 
+=======
+        element={<StudentDashboard />} 
+      />
+      <Route
+        path="/teacher/dashboard"
+        element={<TeacherDashboard />} 
+      />
+      <Route path="*" element={<Navigate to="/" replace />} />
+>>>>>>> upstream/master
     </Routes>
   )
 }
