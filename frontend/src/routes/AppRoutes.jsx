@@ -1,0 +1,74 @@
+import React from 'react'
+import { Navigate, Route, Routes } from 'react-router-dom'
+import Home from '../pages/Home'
+import Login from '../pages/auth/Login'
+import Register from '../pages/auth/Register'
+import StudentDashboard from '../pages/StudentDashboard'
+import TeacherDashboard from '../pages/TeacherDashboard'
+import { getToken, getRole } from '../utils/auth'
+import ExamAttempt from '../pages/ExamAttempt'
+import Result from '../pages/Result'
+// import CreateExam from '../pages/CreateExam' // removed missing file
+
+const ProtectedRoute = ({ element, requiredRole }) => {
+  // TEMP login for testing
+  localStorage.setItem("token", "testtoken");
+  localStorage.setItem("role", "student");
+
+  const token = getToken();
+  const role = getRole();
+
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (requiredRole && role !== requiredRole) {
+    return <Navigate to="/" replace />;
+  }
+
+  return element;
+};
+
+
+const AppRoutes = () => {
+  return (
+    <Routes>
+      <Route path="/" element={<Home />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      <Route
+        path="/student/dashboard"
+        element={<ProtectedRoute element={<StudentDashboard />} requiredRole="student" />}
+      />
+      <Route
+        path="/teacher/dashboard"
+        element={<ProtectedRoute element={<TeacherDashboard />} requiredRole="teacher" />}
+      />
+      <Route
+  path="/exam/:examId"
+  element={
+    <ProtectedRoute
+      element={<ExamAttempt />}
+      requiredRole="student"
+    />
+  }
+/>
+
+<Route
+  path="/result/:resultId"
+  element={
+    <ProtectedRoute
+      element={<Result />}
+      requiredRole="student"
+    />
+  }
+/>
+
+
+      <Route path="*" element={<Navigate to="/" replace />} />
+
+    </Routes>
+  )
+}
+
+export default AppRoutes
